@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- プロジェクト基本設定 -->
+  <PropertyGroup>
+    <!-- 基本設定 -->
+    <TargetFramework>net6.0</TargetFramework>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet固有設定 -->
+    <PackageId>Otchitta.Libraries.Record</PackageId>
+    <Title>Otchitta Record Library</Title>
+    <Description>情報ライブラリ</Description>
+    <PackageProjectUrl>https://github.com/otchitta/csharp-library-record</PackageProjectUrl>
+    <Authors>Otchitta</Authors>
+    <Copyright>None.</Copyright>
+
+    <!-- XMLドキュメント生成 -->
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>
