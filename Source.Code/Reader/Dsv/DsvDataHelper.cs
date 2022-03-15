@@ -58,7 +58,8 @@ public static class DsvDataHelper {
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
 	/// <returns>復元情報</returns>
-	internal static IEnumerable<string> DecodeLine(ReadOnlySpan<char> source, char search, char escape) {
+	internal static List<string> DecodeLine(ReadOnlySpan<char> source, char search, char escape) {
+		var result = new List<string>();
 		var offset = 0;
 		var ignore = false;
 		for (var index = 0; index < source.Length; index ++) {
@@ -68,13 +69,14 @@ public static class DsvDataHelper {
 			} else if (ignore) {
 				// 処理なし
 			} else if (choose == search) {
-				yield return DecodeItem(source.Slice(offset, index - offset), escape);
+				result.Add(DecodeItem(source.Slice(offset, index - offset), escape));
 				offset = index + 1;
 			}
 		}
 		if (offset < source.Length) {
-			yield return DecodeItem(source.Slice(offset), escape);
+			result.Add(DecodeItem(source.Slice(offset), escape));
 		}
+		return result;
 	}
 
 	/// <summary>
@@ -103,7 +105,8 @@ public static class DsvDataHelper {
 	/// <param name="escape">迂回文字</param>
 	/// <param name="header">変換処理</param>
 	/// <returns>復元情報</returns>
-	public static IEnumerable<DataRecord> DecodeText(ReadOnlySpan<char> source, char search, char escape, Func<int, string> header) {
+	public static List<DataRecord> DecodeText(ReadOnlySpan<char> source, char search, char escape, Func<int, string> header) {
+		var result = new List<DataRecord>();
 		var offset = 0;
 		var ignore = false;
 		var before = (char)0;
@@ -114,13 +117,14 @@ public static class DsvDataHelper {
 			} else if (ignore) {
 				// 処理なし
 			} else if (before == '\r' && choose == '\n') {
-				yield return DecodeData(source.Slice(offset, index - offset - 1), search, escape, header);
+				result.Add(DecodeData(source.Slice(offset, index - offset - 1), search, escape, header));
 				offset = index + 1;
 			}
 			before = choose;
 		}
 		if (offset < source.Length) {
-			yield return DecodeData(source.Slice(offset), search, escape, header);
+			result.Add(DecodeData(source.Slice(offset), search, escape, header));
 		}
+		return result;
 	}
 }
