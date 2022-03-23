@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 
 namespace Otchitta.Libraries.Record;
 
 /// <summary>
-/// 可変要素情報クラスです。
+/// 不変要素情報クラスです。
 /// </summary>
-public sealed class UnfixDataRecord : DataRecord {
+public sealed class FixedDataRecord : DataRecord {
 	#region メンバー変数定義
 	/// <summary>
 	/// 要素一覧
@@ -24,36 +25,52 @@ public sealed class UnfixDataRecord : DataRecord {
 	/// </summary>
 	/// <param name="code">要素番号</param>
 	/// <value>要素情報</value>
-	public object? this[int code] {
-		get => GetData(code);
-		set => SetData(code, value);
-	}
+	public object? this[int code] => GetData(code);
 	/// <summary>
 	/// 要素情報を取得します。
 	/// </summary>
 	/// <param name="name">要素名称</param>
 	/// <value>要素情報</value>
-	public object? this[string name] {
-		get => GetData(name);
-		set => SetData(name, value);
-	}
+	public object? this[string name] => GetData(name);
 	#endregion プロパティー定義
 
 	#region 生成メソッド定義
 	/// <summary>
-	/// 可変要素情報を生成します。
+	/// 不変要素情報を生成します。
 	/// </summary>
-	public UnfixDataRecord() {
+	public FixedDataRecord() {
 		this.values = new List<DataPacket>();
 	}
 	/// <summary>
 	/// 可変要素情報を生成します。
 	/// </summary>
 	/// <param name="values">要素集合</param>
-	public UnfixDataRecord(IEnumerable<DataPacket> values) {
+	/// <exception cref="ArgumentException"><paramref name="values" />の名称が重複している場合</exception>
+	public FixedDataRecord(IEnumerable<DataPacket> values) {
 		this.values = new List<DataPacket>();
+		var caches = new HashSet<string>();
 		foreach (var choose in values) {
-			SetData(choose.Name, choose.Data);
+			if (caches.Add(choose.Name)) {
+				this.values.Add(choose);
+			} else {
+				throw new ArgumentException($"values[{this.values.Count}].Name is duplicated.(name={choose.Name})");
+			}
+		}
+	}
+	/// <summary>
+	/// 可変要素情報を生成します。
+	/// </summary>
+	/// <param name="values">要素集合</param>
+	/// <exception cref="ArgumentException"><paramref name="values" />の名称が重複している場合</exception>
+	public FixedDataRecord(IEnumerable<KeyValuePair<string, object?>> values) {
+		this.values = new List<DataPacket>();
+		var caches = new HashSet<string>();
+		foreach (var choose in values) {
+			if (caches.Add(choose.Key)) {
+				this.values.Add((DataPacket)choose);
+			} else {
+				throw new ArgumentException($"values[{this.values.Count}].Key is duplicated.(key={choose.Key})");
+			}
 		}
 	}
 	#endregion 生成メソッド定義
@@ -94,29 +111,6 @@ public sealed class UnfixDataRecord : DataRecord {
 	/// <param name="name">要素名称</param>
 	/// <returns>要素情報</returns>
 	public object? GetData(string name) => GetCode(name, out var code)? GetData(code): throw new KeyNotFoundException($"name is not found.(name={name})");
-	/// <summary>
-	/// 要素情報を設定します。
-	/// </summary>
-	/// <param name="code">要素番号</param>
-	/// <param name="data">要素情報</param>
-	public void SetData(int code, object? data) => this.values[code] = new DataPacket(GetName(code), data);
-	/// <summary>
-	/// 要素情報を設定します。
-	/// </summary>
-	/// <param name="name">要素名称</param>
-	/// <param name="data">要素情報</param>
-	public void SetData(string name, object? data) {
-		if (GetCode(name, out var code)) {
-			this.values[code] = new DataPacket(name, data);
-		} else {
-			this.values.Add(new DataPacket(name, data));
-		}
-	}
-	/// <summary>
-	/// 要素情報を削除します。
-	/// </summary>
-	/// <param name="code">要素番号</param>
-	public void Remove(int code) => this.values.RemoveAt(code);
 	#endregion 公開メソッド定義
 
 	#region 実装メソッド定義

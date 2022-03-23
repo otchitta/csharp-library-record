@@ -3,7 +3,7 @@ namespace Otchitta.Libraries.Record;
 /// <summary>
 /// 要素情報構造体です。
 /// </summary>
-public struct DataPacket {
+public readonly struct DataPacket {
 	/// <summary>
 	/// 要素名称を取得します。
 	/// </summary>
@@ -38,4 +38,17 @@ public struct DataPacket {
 		name = Name;
 		data = Data;
 	}
+
+	/// <summary>
+	/// 要素情報を変換します。
+	/// </summary>
+	/// <param name="source">要素情報</param>
+	/// <returns>変換情報</returns>
+	public static implicit operator System.Collections.Generic.KeyValuePair<string, object?>(DataPacket source) => new System.Collections.Generic.KeyValuePair<string, object?>(source.Name, source.Data);
+	/// <summary>
+	/// 要素情報を変換します。
+	/// </summary>
+	/// <param name="source">要素情報</param>
+	/// <returns>変換情報</returns>
+	public static explicit operator DataPacket(System.Collections.Generic.KeyValuePair<string, object?> source) => new DataPacket(source.Key, source.Value);
 }
