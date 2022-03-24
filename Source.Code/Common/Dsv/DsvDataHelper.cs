@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Otchitta.Libraries.Record;
-using Otchitta.Libraries.Stream;
 
 namespace Otchitta.Libraries.Common.Dsv;
 
@@ -11,13 +10,13 @@ namespace Otchitta.Libraries.Common.Dsv;
 /// </summary>
 public static class DsvDataHelper {
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="offset">開始位置</param>
 	/// <param name="length">対象個数</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	internal static string DecodeText(StringBuilder source, int offset, int length, char escape) {
 		var result = new StringBuilder(length);
 		var ignore = false;
@@ -40,13 +39,13 @@ public static class DsvDataHelper {
 		return result.ToString();
 	}
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="offset">開始位置</param>
 	/// <param name="length">対象個数</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	internal static string DecodeItem(StringBuilder source, int offset, int length, char escape) {
 		if (source.Length <= 0) {
 			return String.Empty;
@@ -59,12 +58,12 @@ public static class DsvDataHelper {
 		}
 	}
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	internal static IEnumerable<string> DecodeLine(StringBuilder source, char search, char escape) {
 		var offset = 0;
 		var ignore = false;
@@ -84,19 +83,22 @@ public static class DsvDataHelper {
 		}
 	}
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="reader">読込処理</param>
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
-	internal static IEnumerable<DsvDataSource> DecodeData(StringReader reader, char search, char escape) {
+	/// <returns>復号情報</returns>
+	public static IEnumerable<DsvDataSource> DecodeData(Func<int> reader, char search, char escape) {
 		var buffer = new StringBuilder();
 		var ignore = false;
 		var before = (char)0;
 		var offset = 1;
-		while (reader.Read(out var choose)) {
-			if (choose == escape) {
+		while (true) {
+			var choose = reader();
+			if (choose < 0) {
+				break;
+			} else if (choose == escape) {
 				ignore = !ignore;
 				buffer.Append(choose);
 			} else if (ignore) {
@@ -115,12 +117,56 @@ public static class DsvDataHelper {
 		}
 	}
 
+	#region 暗号メソッド定義(EncodeText/EncodeData)
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 暗号情報へ変換します。
+	/// </summary>
+	/// <param name="source">復号情報</param>
+	/// <param name="escape">迂回文字</param>
+	/// <returns>暗号情報</returns>
+	internal static string EncodeText(string source, char escape) {
+		var change = source.Replace($"{escape}", $"{escape}{escape}");
+		return $"{escape}{change}{escape}";
+	}
+	/// <summary>
+	/// 復号情報を書込みます。
+	/// </summary>
+	/// <param name="writer">書込処理</param>
+	/// <param name="source">書込情報</param>
+	/// <param name="middle">区切文字</param>
+	/// <param name="escape">迂回文字</param>
+	internal static void EncodeData(Action<string> writer, DsvDataSource source, string middle, char escape) {
+		var prefix = String.Empty;
+		foreach (var choose in source.Source) {
+			writer(prefix);
+			writer(EncodeText(choose, escape));
+			prefix = middle;
+		}
+	}
+	/// <summary>
+	/// 復号情報を書込みます。
+	/// </summary>
+	/// <param name="writer">書込処理</param>
+	/// <param name="source">書込集合</param>
+	/// <param name="middle">区切文字</param>
+	/// <param name="escape">迂回文字</param>
+	public static void EncodeData(Action<string> writer, IEnumerable<DsvDataSource> source, char middle, char escape) {
+		var change = middle.ToString();
+		var prefix = String.Empty;
+		foreach (var choose in source) {
+			if (String.IsNullOrEmpty(prefix) == false) writer(prefix);
+			EncodeData(writer, choose, change, escape);
+			prefix = "\r\n";
+		}
+	}
+	#endregion 暗号メソッド定義(EncodeText/EncodeData)
+
+	/// <summary>
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	[Obsolete]
 	internal static string DecodeText(ReadOnlySpan<char> source, char escape) {
 		var result = new System.Text.StringBuilder(source.Length);
@@ -142,11 +188,11 @@ public static class DsvDataHelper {
 	}
 
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	[Obsolete]
 	internal static string DecodeItem(ReadOnlySpan<char> source, char escape) {
 		if (source.Length <= 0) {
@@ -161,12 +207,12 @@ public static class DsvDataHelper {
 	}
 
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	[Obsolete]
 	internal static List<string> DecodeLine(ReadOnlySpan<char> source, char search, char escape) {
 		var result = new List<string>();
@@ -190,13 +236,13 @@ public static class DsvDataHelper {
 	}
 
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
 	/// <param name="header">変換処理</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	[Obsolete]
 	internal static DataRecord DecodeData(ReadOnlySpan<char> source, char search, char escape, Func<int, string> header) {
 		var result = new UnfixDataRecord();
@@ -209,13 +255,13 @@ public static class DsvDataHelper {
 	}
 
 	/// <summary>
-	/// 復元情報へ変換します。
+	/// 復号情報へ変換します。
 	/// </summary>
 	/// <param name="source">要素情報</param>
 	/// <param name="search">区切文字</param>
 	/// <param name="escape">迂回文字</param>
 	/// <param name="header">変換処理</param>
-	/// <returns>復元情報</returns>
+	/// <returns>復号情報</returns>
 	[Obsolete]
 	public static List<DataRecord> DecodeText(ReadOnlySpan<char> source, char search, char escape, Func<int, string> header) {
 		var result = new List<DataRecord>();
