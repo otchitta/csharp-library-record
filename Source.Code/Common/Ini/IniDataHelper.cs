@@ -12,18 +12,21 @@ public static class IniDataHelper {
 	/// <summary>
 	/// 復元情報へ変換します。
 	/// </summary>
-	/// <param name="reader">要素情報</param>
+	/// <param name="reader">読込処理</param>
 	/// <returns>復元情報</returns>
-	public static IniSourceData DecodeData(StringReader reader) {
+	public static IniSourceData DecodeData(Func<int> reader) {
 		var caches = new System.Text.StringBuilder();
 		var buffer = new Builder();
-		var before = (char)0;
-		while (reader.Read(out var choose)) {
-			if (before == '\r' && choose == '\n') {
+		var before = 0;
+		while (true) {
+			var choose = reader();
+			if (choose < 0) {
+				break;
+			} else if (before == '\r' && choose == '\n') {
 				buffer.RegistData(caches.ToString(0, caches.Length - 1));
 				caches.Clear();
 			} else {
-				caches.Append(choose);
+				caches.Append((char)choose);
 			}
 			before = choose;
 		}
