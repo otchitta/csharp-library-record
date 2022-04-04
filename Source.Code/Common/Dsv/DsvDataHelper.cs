@@ -92,7 +92,7 @@ public static class DsvDataHelper {
 	public static IEnumerable<DsvDataSource> DecodeData(Func<int> reader, char search, char escape) {
 		var buffer = new StringBuilder();
 		var ignore = false;
-		var before = (char)0;
+		var before = 0;
 		var offset = 1;
 		while (true) {
 			var choose = reader();
@@ -100,17 +100,18 @@ public static class DsvDataHelper {
 				break;
 			} else if (choose == escape) {
 				ignore = !ignore;
-				buffer.Append(choose);
+				buffer.Append((char)choose);
 			} else if (ignore) {
-				buffer.Append(choose);
+				buffer.Append((char)choose);
 			} else if (before == '\r' && choose == '\n') {
 				buffer.Length --;
 				yield return new DsvDataSource(offset, DecodeLine(buffer, search, escape));
 				buffer.Length = 0;
 			} else {
-				buffer.Append(choose);
+				buffer.Append((char)choose);
 			}
 			if (choose == '\n') offset ++;
+			before = choose;
 		}
 		if (buffer.Length != 0) {
 			yield return new DsvDataSource(offset, DecodeLine(buffer, search, escape));

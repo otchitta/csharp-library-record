@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otchitta.Libraries.Record", "Source.Code\Otchitta.Libraries.Record.csproj", "{0D99C4B2-75A3-4E54-88E9-5E83EFD3C7F8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source.Demo", "Source.Demo", "{FDC51AC5-7910-4964-92F1-CFF5C70DC928}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otchitta.Utilities.Record", "Source.Demo\Console.001\Otchitta.Utilities.Record.csproj", "{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,12 @@ Global
 		{0D99C4B2-75A3-4E54-88E9-5E83EFD3C7F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D99C4B2-75A3-4E54-88E9-5E83EFD3C7F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D99C4B2-75A3-4E54-88E9-5E83EFD3C7F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5FF31D49-C7A6-4F61-8B6C-C7B5F3914DF7} = {FDC51AC5-7910-4964-92F1-CFF5C70DC928}
 	EndGlobalSection
 EndGlobal
